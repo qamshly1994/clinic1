@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>مرحبا {{ doctor.full_name }}</h2>
+
+{% if doctor.username == 'admin' %}
+<h3>الدكاترة</h3>
+<ul>
+    {% for d in doctors %}
+    <li>{{ d.full_name }} - {{ d.specialty }}</li>
+    {% endfor %}
+</ul>
+{% else %}
+<h3>مرحباً بك دكتور {{ doctor.full_name }}</h3>
+<a href="{{ url_for('patients') }}">عرض المرضى</a>
+{% endif %}
+{% endblock %}
