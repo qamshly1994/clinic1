@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>إضافة دكتور جديد</h2>
+<form method="POST">
+    <label>اسم المستخدم</label>
+    <input type="text" name="username" required>
+    <label>الاسم الكامل</label>
+    <input type="text" name="full_name" required>
+    <label>التخصص</label>
+    <input type="text" name="specialty">
+    <label>كلمة المرور</label>
+    <input type="password" name="password" required>
+    <button type="submit">إضافة</button>
+</form>
+
+<h3>الدكاترة الحاليين</h3>
+<ul>
+    {% for d in doctors %}
+    <li>{{ d.full_name }} - {{ d.username }} - {{ d.specialty }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
