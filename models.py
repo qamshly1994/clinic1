@@ -32,4 +32,3 @@ class Session(db.Model):
     arms = db.Column(db.Float)
     thighs = db.Column(db.Float)
     notes = db.Column(db.Text)
-
