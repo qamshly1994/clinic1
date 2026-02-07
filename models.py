@@ -31,4 +31,5 @@ class Session(db.Model):
     hip = db.Column(db.Float)
     arms = db.Column(db.Float)
     thighs = db.Column(db.Float)
-    notes = db.Column(db.Text
+    notes = db.Column(db.Text)
+
