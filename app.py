@@ -19,7 +19,6 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
-# ===== User Class =====
 class DoctorUser(UserMixin):
     def __init__(self, doctor):
         self.id = doctor.id
@@ -43,7 +42,7 @@ def login():
         password = request.form["password"]
         doctor = Doctor.query.filter_by(username=username).first()
         if doctor and bcrypt.check_password_hash(doctor.password_hash, password):
-            login_user(DoctorUser(doctor), remember=True)
+            login_user(DoctorUser(doctor))
             return redirect(url_for("dashboard"))
         else:
             flash("بيانات الدخول غير صحيحة")
@@ -150,7 +149,5 @@ with app.app_context():
         db.session.add(admin)
         db.session.commit()
 
-# ===== Run server =====
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+    app.run(debug=True)
