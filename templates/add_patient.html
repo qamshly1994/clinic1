@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>إضافة مريض جديد</h2>
+<form method="POST">
+    <label>اسم المريض</label>
+    <input type="text" name="name" required>
+
+    <label>القسم</label>
+    <select name="section" required>
+        <option value="تغذية">تغذية</option>
+        <option value="جلدية">جلدية</option>
+        <option value="أسنان">أسنان</option>
+        <option value="ليزر">ليزر</option>
+    </select>
+
+    <label>ملاحظة أولية</label>
+    <textarea name="notes"></textarea>
+
+    <button type="submit">إضافة المريض</button>
+</form>
+{% endblock %}
