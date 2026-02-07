@@ -1,22 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>إضافة دكتور جديد</h2>
-<form method="POST">
-    <label>اسم المستخدم</label>
-    <input type="text" name="username" required>
-    <label>الاسم الكامل</label>
-    <input type="text" name="full_name" required>
-    <label>التخصص</label>
-    <input type="text" name="specialty">
-    <label>كلمة المرور</label>
-    <input type="password" name="password" required>
-    <button type="submit">إضافة</button>
-</form>
-
-<h3>الدكاترة الحاليين</h3>
-<ul>
-    {% for d in doctors %}
-    <li>{{ d.full_name }} - {{ d.username }} - {{ d.specialty }}</li>
-    {% endfor %}
-</ul>
+<div class="card mx-auto" style="max-width: 600px;">
+    <div class="card-header bg-primary text-white">إضافة دكتور جديد</div>
+    <div class="card-body">
+        <form method="POST">
+            <div class="mb-3">
+                <input name="full_name" class="form-control" placeholder="اسم الدكتور" required>
+            </div>
+            <div class="mb-3">
+                <input name="username" class="form-control" placeholder="اسم المستخدم" required>
+            </div>
+            <div class="mb-3">
+                <input type="password" name="password" class="form-control" placeholder="كلمة المرور" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">إضافة الدكتور</button>
+        </form>
+    </div>
+</div>
 {% endblock %}
