@@ -19,16 +19,17 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
+# ===== User Class =====
 class DoctorUser(UserMixin):
-    pass
+    def __init__(self, doctor):
+        self.id = doctor.id
+        self.username = doctor.username
 
 @login_manager.user_loader
 def load_user(user_id):
     doctor = Doctor.query.get(int(user_id))
     if doctor:
-        user = DoctorUser()
-        user.id = doctor.id
-        return user
+        return DoctorUser(doctor)
     return None
 
 # ===== Routes =====
@@ -42,8 +43,7 @@ def login():
         password = request.form["password"]
         doctor = Doctor.query.filter_by(username=username).first()
         if doctor and bcrypt.check_password_hash(doctor.password_hash, password):
-            login_user(DoctorUser(), remember=True)
-            current_user.id = doctor.id
+            login_user(DoctorUser(doctor), remember=True)
             return redirect(url_for("dashboard"))
         else:
             flash("بيانات الدخول غير صحيحة")
@@ -113,6 +113,28 @@ def patient_detail(patient_id):
     sessions = Session.query.filter_by(patient_id=patient.id).order_by(Session.date.desc()).all()
     return render_template("patient_detail.html", patient=patient, sessions=sessions)
 
+@app.route("/add_doctor", methods=["GET", "POST"])
+@login_required
+def add_doctor():
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        full_name = request.form["full_name"]
+
+        if Doctor.query.filter_by(username=username).first():
+            flash("اسم المستخدم موجود مسبقاً")
+            return redirect(url_for("add_doctor"))
+
+        password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+        new_doctor = Doctor(username=username, password_hash=password_hash, full_name=full_name)
+        db.session.add(new_doctor)
+        db.session.commit()
+
+        flash("تم إضافة الدكتور بنجاح")
+        return redirect(url_for("dashboard"))
+
+    return render_template("add_doctor.html")
+
 @app.route("/logout")
 @login_required
 def logout():
@@ -122,9 +144,9 @@ def logout():
 # ===== Initialize DB =====
 with app.app_context():
     db.create_all()
-    if not Doctor.query.filter_by(username="admin").first():
-        password = bcrypt.generate_password_hash("admin123").decode("utf-8")
-        admin = Doctor(username="admin", password_hash=password, full_name="Admin")
+    if not Doctor.query.filter_by(username="master").first():
+        password = bcrypt.generate_password_hash("Master@123").decode("utf-8")
+        admin = Doctor(username="master", password_hash=password, full_name="مدير العيادة")
         db.session.add(admin)
         db.session.commit()
 
