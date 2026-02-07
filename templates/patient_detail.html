@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>مريض: {{ patient.name }}</h2>
+<p>رقم المريض: {{ patient.patient_id }}</p>
+<p>ملاحظات: {{ patient.notes }}</p>
+
+<h3>استبيان التغذية</h3>
+<form method="POST">
+    <label>التاريخ الصحي</label>
+    <textarea name="medical_history">{{ patient.assessment.medical_history if patient.assessment else '' }}</textarea>
+
+    <label>العادات الغذائية</label>
+    <textarea name="dietary_habits">{{ patient.assessment.dietary_habits if patient.assessment else '' }}</textarea>
+
+    <label>مستوى النشاط البدني</label>
+    <input type="text" name="activity_level" value="{{ patient.assessment.activity_level if patient.assessment else '' }}">
+
+    <label>الهدف من الزيارة</label>
+    <textarea name="goal">{{ patient.assessment.goal if patient.assessment else '' }}</textarea>
+
+    <label>هل يوجد حمل؟</label>
+    <input type="text" name="pregnancy" value="{{ patient.assessment.pregnancy if patient.assessment else '' }}">
+
+    <button type="submit">حفظ الاستبيان</button>
+</form>
+
+<h3>جلسات المريض</h3>
+<form method="POST" action="{{ url_for('add_session', patient_id=patient.id) }}">
+    <label>تاريخ الجلسة</label>
+    <input type="date" name="date" required>
+
+    <label>الوزن</label>
+    <input type="number" step="0.1" name="weight">
+
+    <label>محيط الخصر قبل</label>
+    <input type="number" step="0.1" name="waist_before">
+
+    <label>محيط الخصر بعد</label>
+    <input type="number" step="0.1" name="waist_after">
+
+    <label>محيط البطن قبل</label>
+    <input type="number" step="0.1" name="belly_before">
+
+    <label>محيط البطن بعد</label>
+    <input type="number" step="0.1" name="belly_after">
+
+    <label>محيط الورك</label>
+    <input type="number" step="0.1" name="hip">
+
+    <label>محيط اليدين</label>
+    <input type="number" step="0.1" name="arms">
+
+    <label>محيط الفخذ</label>
+    <input type="number" step="0.1" name="thighs">
+
+    <button type="submit">إضافة جلسة</button>
+</form>
+
+<table border="1">
+    <tr>
+        <th>تاريخ الجلسة</th>
+        <th>الوزن</th>
+        <th>الخصر قبل</th>
+        <th>الخصر بعد</th>
+        <th>البطن قبل</th>
+        <th>البطن بعد</th>
+        <th>الورك</th>
+        <th>اليدين</th>
+        <th>الفخذ</th>
+    </tr>
+    {% for s in sessions %}
+    <tr>
+        <td>{{ s.date }}</td>
+        <td>{{ s.weight }}</td>
+        <td>{{ s.waist_before }}</td>
+        <td>{{ s.waist_after }}</td>
+        <td>{{ s.belly_before }}</td>
+        <td>{{ s.belly_after }}</td>
+        <td>{{ s.hip }}</td>
+        <td>{{ s.arms }}</td>
+        <td>{{ s.thighs }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
