@@ -7,9 +7,11 @@ from models import db, Doctor, Patient, Session
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "dev-secret")
+
 db_url = os.environ.get("DATABASE_URL", "sqlite:///clinic.db")
 if db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
+
 app.config["SQLALCHEMY_DATABASE_URI"] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
@@ -19,10 +21,19 @@ bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = "login"
 
+
+# ====== Health Check Route (مهم جداً لـ Render) ======
+@app.route("/health")
+def health():
+    return "OK", 200
+
+
+# ====== User Class ======
 class DoctorUser(UserMixin):
     def __init__(self, doctor):
         self.id = doctor.id
         self.username = doctor.username
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -31,15 +42,23 @@ def load_user(user_id):
         return DoctorUser(doctor)
     return None
 
+
 # ===== Routes =====
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/", methods=["GET"])
+def root():
+    return redirect(url_for("login"))
+
+
+@app.route("/login", methods=["GET", "POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("dashboard"))
+
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
+
         doctor = Doctor.query.filter_by(username=username).first()
         if doctor and bcrypt.check_password_hash(doctor.password_hash, password):
             login_user(DoctorUser(doctor))
@@ -47,7 +66,9 @@ def login():
         else:
             flash("بيانات الدخول غير صحيحة")
             return redirect(url_for("login"))
+
     return render_template("login.html")
+
 
 @app.route("/dashboard")
 @login_required
@@ -56,6 +77,7 @@ def dashboard():
     patients = Patient.query.filter_by(doctor_id=doctor.id).order_by(Patient.created_at.desc()).all()
     return render_template("dashboard.html", doctor=doctor, patients=patients)
 
+
 @app.route("/add_patient", methods=["GET", "POST"])
 @login_required
 def add_patient():
@@ -63,47 +85,42 @@ def add_patient():
         name = request.form["name"]
         section = request.form["section"]
         notes = request.form.get("notes", "")
+
         doctor = Doctor.query.get(current_user.id)
         patient = Patient(name=name, section=section, notes=notes, doctor=doctor)
+
         db.session.add(patient)
         db.session.commit()
         flash("تم إضافة المريض بنجاح")
         return redirect(url_for("dashboard"))
+
     return render_template("add_patient.html")
+
 
 @app.route("/patient/<int:patient_id>", methods=["GET", "POST"])
 @login_required
 def patient_detail(patient_id):
     patient = Patient.query.get_or_404(patient_id)
+
     if patient.doctor_id != current_user.id:
         flash("غير مصرح بالوصول لهذا المريض")
         return redirect(url_for("dashboard"))
 
     if request.method == "POST":
-        date = request.form.get("date")
-        weight = float(request.form.get("weight", 0))
-        belly_before = float(request.form.get("belly_before", 0))
-        belly_after = float(request.form.get("belly_after", 0))
-        waist_before = float(request.form.get("waist_before", 0))
-        waist_after = float(request.form.get("waist_after", 0))
-        hip = float(request.form.get("hip", 0))
-        arms = float(request.form.get("arms", 0))
-        thighs = float(request.form.get("thighs", 0))
-        notes = request.form.get("notes", "")
-
         session = Session(
             patient=patient,
-            date=datetime.strptime(date, "%Y-%m-%d"),
-            weight=weight,
-            belly_before=belly_before,
-            belly_after=belly_after,
-            waist_before=waist_before,
-            waist_after=waist_after,
-            hip=hip,
-            arms=arms,
-            thighs=thighs,
-            notes=notes
+            date=datetime.strptime(request.form["date"], "%Y-%m-%d"),
+            weight=float(request.form.get("weight", 0)),
+            belly_before=float(request.form.get("belly_before", 0)),
+            belly_after=float(request.form.get("belly_after", 0)),
+            waist_before=float(request.form.get("waist_before", 0)),
+            waist_after=float(request.form.get("waist_after", 0)),
+            hip=float(request.form.get("hip", 0)),
+            arms=float(request.form.get("arms", 0)),
+            thighs=float(request.form.get("thighs", 0)),
+            notes=request.form.get("notes", "")
         )
+
         db.session.add(session)
         db.session.commit()
         flash("تم إضافة الجلسة بنجاح")
@@ -111,6 +128,7 @@ def patient_detail(patient_id):
 
     sessions = Session.query.filter_by(patient_id=patient.id).order_by(Session.date.desc()).all()
     return render_template("patient_detail.html", patient=patient, sessions=sessions)
+
 
 @app.route("/add_doctor", methods=["GET", "POST"])
 @login_required
@@ -126,6 +144,7 @@ def add_doctor():
 
         password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
         new_doctor = Doctor(username=username, password_hash=password_hash, full_name=full_name)
+
         db.session.add(new_doctor)
         db.session.commit()
 
@@ -134,21 +153,27 @@ def add_doctor():
 
     return render_template("add_doctor.html")
 
+
 @app.route("/logout")
 @login_required
 def logout():
     logout_user()
     return redirect(url_for("login"))
 
-# ===== Initialize DB =====
-with app.app_context():
-    db.create_all()
-    if not Doctor.query.filter_by(username="master").first():
-        password = bcrypt.generate_password_hash("Master@123").decode("utf-8")
-        admin = Doctor(username="master", password_hash=password, full_name="مدير العيادة")
-        db.session.add(admin)
-        db.session.commit()
+
+# ===== Proper DB Init (مهم جداً مع Gunicorn) =====
+def init_db():
+    with app.app_context():
+        db.create_all()
+        if not Doctor.query.filter_by(username="master").first():
+            password = bcrypt.generate_password_hash("Master@123").decode("utf-8")
+            admin = Doctor(username="master", password_hash=password, full_name="مدير العيادة")
+            db.session.add(admin)
+            db.session.commit()
+
+
+init_db()
+
 
 if __name__ == "__main__":
-    app.run(debug=False)
-
+    app.run(
