@@ -1,20 +1,26 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card mx-auto" style="max-width: 600px;">
-    <div class="card-header bg-primary text-white">إضافة دكتور جديد</div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <input name="full_name" class="form-control" placeholder="اسم الدكتور" required>
-            </div>
-            <div class="mb-3">
-                <input name="username" class="form-control" placeholder="اسم المستخدم" required>
-            </div>
-            <div class="mb-3">
-                <input type="password" name="password" class="form-control" placeholder="كلمة المرور" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">إضافة الدكتور</button>
-        </form>
-    </div>
-</div>
+<h3>إضافة دكتور جديد</h3>
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">اسم المستخدم</label>
+    <input type="text" name="username" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">كلمة المرور</label>
+    <input type="password" name="password" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">الاسم الكامل</label>
+    <input type="text" name="full_name" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">الصلاحية</label>
+    <select name="role" class="form-select">
+      <option value="doctor" selected>دكتور</option>
+      <option value="admin">مدير</option>
+    </select>
+  </div>
+  <button type="submit" class="btn btn-primary">إضافة الدكتور</button>
+</form>
 {% endblock %}
