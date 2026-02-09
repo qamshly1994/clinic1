@@ -1,20 +1,29 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card mx-auto" style="max-width: 600px;">
-    <div class="card-header bg-primary text-white">إضافة مريض جديد</div>
-    <div class="card-body">
-        <form method="POST">
-            <div class="mb-3">
-                <input name="name" class="form-control" placeholder="اسم المريض" required>
-            </div>
-            <div class="mb-3">
-                <input name="section" class="form-control" placeholder="القسم">
-            </div>
-            <div class="mb-3">
-                <textarea name="notes" class="form-control" placeholder="ملاحظات"></textarea>
-            </div>
-            <button type="submit" class="btn btn-primary w-100">إضافة المريض</button>
-        </form>
-    </div>
-</div>
+<h3 class="mb-4">إضافة مريض جديد</h3>
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">اسم المريض</label>
+    <input type="text" class="form-control" name="name" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">القسم</label>
+    <input type="text" class="form-control" name="section">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">ملاحظات</label>
+    <textarea class="form-control" name="notes"></textarea>
+  </div>
+  {% if doctor.role=='admin' %}
+  <div class="mb-3">
+    <label class="form-label">اختر الدكتور</label>
+    <select name="doctor_id" class="form-select">
+      {% for d in doctors %}
+      <option value="{{ d.id }}">{{ d.full_name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+  <button type="submit" class="btn btn-success">حفظ المريض</button>
+</form>
 {% endblock %}
