@@ -51,4 +51,5 @@ class Invoice(db.Model):
     doctor_id = db.Column(db.Integer, db.ForeignKey("doctor.id"), nullable=False)
     amount = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(20), default="paid")  # جميع الفواتير نقداً
-    created_at = db.Column(db.DateTime, default=datetime.utcnow
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
